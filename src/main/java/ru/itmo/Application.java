@@ -12,6 +12,7 @@ import static ru.itmo.util.ExecuteUtils.handleCommand;
 public class Application {
 
     public static void main(String[] args) {
+        //student
         CommandExecutor executor = Context.getContext().getCommandExecutor();
         Scanner scanner = new Scanner(System.in);
         State state = State.INITIAL;
