@@ -17,7 +17,7 @@ public class ParseUtils {
                 .filter(value -> !value.isEmpty())
                 .collect(Collectors.toList());
         if (list.size() > limit) {
-            throw new ValidateException("Expected count values: " + limit + ", but actual count: " + list.size());
+            throw new ValidateException("Data is not valid, data: " + item);
         }
         return list;
     }

@@ -1,10 +1,8 @@
 package ru.itmo.service.holder;
 
 import ru.itmo.model.Route;
-import ru.itmo.model.State;
 
 import java.util.List;
-import java.util.Map;
 
 public interface RouteHolder {
     Route addElement(Route route);
@@ -15,15 +13,13 @@ public interface RouteHolder {
 
     void updateElement(Long id, Route route);
 
-    void getElementAtIndex(int index);
+    void getElementByMaxName();
 
-    Route getElementByMaxName();
-
-    String getInfo();
+    void getInfo();
 
     boolean checkExistsId(Long id);
 
-    Map<Long, List<Route>> groupCountingById();
+    void groupCountingById();
 
     void showAllElements();
 
@@ -35,9 +31,9 @@ public interface RouteHolder {
 
     void clear();
 
-    void writeToFile();
+    void writeToFile(String fileName);
 
-    State readFromFile(String fileName);
+    void initCollection(List<Route> routeList);
 
     Long getNextId();
 }

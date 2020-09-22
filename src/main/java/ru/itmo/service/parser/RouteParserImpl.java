@@ -1,6 +1,5 @@
 package ru.itmo.service.parser;
 
-import ru.itmo.context.Global;
 import ru.itmo.exception.ValidateException;
 import ru.itmo.model.Coordinates;
 import ru.itmo.model.Location;
@@ -13,6 +12,7 @@ import java.util.Scanner;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import static ru.itmo.util.LogUtils.log;
 import static ru.itmo.util.ParseUtils.parseStringToTwoValues;
 import static ru.itmo.util.ParseUtils.parseStringToValues;
 import static ru.itmo.util.validator.EntityValidator.*;
@@ -22,18 +22,17 @@ public class RouteParserImpl implements RouteParser {
     private static final String LOCATION_TO = "to";
 
     private boolean isUpdate = false;
-    private boolean isRead = false;
 
     @Override
-    public Route updateRoute() {
+    public Route updateRoute(Scanner scanner) {
         isUpdate = true;
-        return getRoute(getScanner(), null);
+        return getRoute(scanner, null);
     }
 
     @Override
-    public Route addRoute(Long nextId) {
+    public Route newRoute(Scanner scanner, Long nextId) {
         isUpdate = false;
-        return getRoute(getScanner(), nextId);
+        return getRoute(scanner, nextId);
     }
 
     private Route getRoute(Scanner scanner, Long nextId) {
@@ -71,17 +70,17 @@ public class RouteParserImpl implements RouteParser {
     }
 
     private Route.RouteBuilder name(Route.RouteBuilder builder, String value) {
-        logValue(value);
+        log(value);
         return builder.name(EntityValidator.checkEmpty(value));
     }
 
     private Route.RouteBuilder coordinates(Route.RouteBuilder builder, String value) {
-        logValue(value);
+        log(value);
         return builder.coordinates(checkCoordinates(getCoordinates(parseStringToTwoValues(value))));
     }
 
     private Route.RouteBuilder location(Route.RouteBuilder builder, String value, String location) {
-        logValue(value);
+        log(value);
         if (LOCATION_FROM.equals(location)) {
             return builder.from(checkLocation(getLocation(parseStringToValues(value, 3))));
         }
@@ -90,7 +89,7 @@ public class RouteParserImpl implements RouteParser {
     }
 
     private Route.RouteBuilder distance(Route.RouteBuilder builder, String value) {
-        logValue(value);
+        log(value);
         return builder.distance(checkDistance(Long.parseLong(parseStringToValues(value, 1).get(0))));
     }
 
@@ -121,22 +120,6 @@ public class RouteParserImpl implements RouteParser {
             return supplier.get();
         } catch (Exception e) {
             return null;
-        }
-    }
-
-    private Scanner getScanner() {
-        Scanner scanner = Global.getGlobal().getScanner();
-        if (scanner != null) {
-            isRead = true;
-            return scanner;
-        }
-        isRead = false;
-        return new Scanner(System.in);
-    }
-
-    private void logValue(String value) {
-        if (isRead) {
-            System.out.println(value);
         }
     }
 }

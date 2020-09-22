@@ -5,7 +5,7 @@ import ru.itmo.model.Route;
 import java.util.Scanner;
 
 public interface RouteParser {
-    Route updateRoute();
+    Route updateRoute(Scanner scanner);
 
-    Route addRoute(Long nextId);
+    Route newRoute(Scanner scanner, Long nextId);
 }

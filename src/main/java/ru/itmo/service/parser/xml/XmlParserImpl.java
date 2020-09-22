@@ -19,7 +19,7 @@ public class XmlParserImpl implements XmlParser {
         try {
             return mapXmlStringToList(mapXmlFileToString(fileName));
         } catch (Exception e) {
-            throw new RuntimeException(String.format(e.getMessage() + " . File name: %s", fileName));
+            throw new RuntimeException(e.getMessage());
         }
     }
 

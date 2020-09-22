@@ -1,10 +1,8 @@
 package ru.itmo.service.holder;
 
 import ru.itmo.context.Context;
-import ru.itmo.context.Global;
 import ru.itmo.exception.ValidateException;
 import ru.itmo.model.Route;
-import ru.itmo.model.State;
 
 import java.time.ZonedDateTime;
 import java.util.*;
@@ -54,16 +52,13 @@ public class RouteHolderImpl implements RouteHolder {
 
     public void clear() {
         ROUTES.clear();
+        startId = 1L;
         updateTime = now();
     }
 
     public void insertElementAtIndex(int index, Route route) {
         ROUTES.add(checkIndex(index), route);
         updateTime = now();
-    }
-
-    public void getElementAtIndex(int index) {
-        checkIndex(index);
     }
 
     private int checkIndex(int index) {
@@ -99,14 +94,15 @@ public class RouteHolderImpl implements RouteHolder {
         updateTime = now();
     }
 
-    public Route getElementByMaxName() {
-        return ROUTES.stream()
+    public void getElementByMaxName() {
+        Route route = ROUTES.stream()
                 .max(Comparator.comparing(Route::getName))
                 .orElseThrow(() -> new RuntimeException("Max element is not present"));
+        System.out.println(route);
     }
 
-    public Map<Long, List<Route>> groupCountingById() {
-        return ROUTES.stream().collect(Collectors.groupingBy(Route::getId));
+    public void groupCountingById() {
+        System.out.println(ROUTES.stream().collect(Collectors.groupingBy(Route::getId)));
     }
 
     public void showAllElements() {
@@ -120,38 +116,30 @@ public class RouteHolderImpl implements RouteHolder {
         return ROUTES.stream().anyMatch(value -> value.getId().equals(id));
     }
 
-    public void writeToFile() {
+    public void writeToFile(String fileName) {
         Context context = Context.getContext();
-        context.getXmlParser().writeDataToFile(ROUTES, Global.getGlobal().getFileName());
+        context.getXmlParser().writeDataToFile(ROUTES, fileName);
     }
 
-    public State readFromFile(String fileName) {
-        List<Route> routeList;
-        try {
-            routeList = Context.getContext().getXmlParser().readDataFromFile(fileName);
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-            return State.SWITCH_STATE;
-        }
-
+    public void initCollection(List<Route> routeList) {
         startId = routeList.stream()
                 .map(Route::getId)
                 .max(Comparator.comparing(Long::longValue))
                 .orElse(1L);
         ROUTES.addAll(routeList);
         updateTime = now();
-        return State.RUN;
     }
 
     public Long getNextId() {
         return startId++;
     }
 
-    public String getInfo() {
-        return "Collection type: " + ROUTES.getClass().toString() + ".\n " +
+    public void getInfo() {
+        String info = "Collection type: " + ROUTES.getClass().toString() + ".\n " +
                 "Creation time: " + CREATION_TIME.toString() + ".\n " +
                 "Data count: " + ROUTES.size() + ".\n " +
                 "Last update time: " + updateTime.toString();
+        System.out.println(info);
     }
 
     private ZonedDateTime now() {
