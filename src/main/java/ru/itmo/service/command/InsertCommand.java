@@ -2,6 +2,7 @@ package ru.itmo.service.command;
 
 import lombok.AllArgsConstructor;
 import ru.itmo.context.Context;
+import ru.itmo.exception.ValidateException;
 import ru.itmo.model.constant.Commands;
 
 import java.util.Scanner;
@@ -27,7 +28,10 @@ public class InsertCommand extends AbstractCommand {
     private void updateRoute() {
         checkNull(value, "id");
         Long id = Long.parseLong(value);
-        getRouteHolder().updateElement(id, Context.getContext().getRouteParser().updateRoute(scanner));
+        if (getRouteHolder().checkExistsId(id) && id > 0L) {
+            getRouteHolder().updateElement(id, Context.getContext().getRouteParser().updateRoute(scanner));
+        }
+        throw new ValidateException("Id not found, id: " + id);
     }
 
     private void insertAtIndex() {

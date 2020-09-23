@@ -66,7 +66,7 @@ public class CommandInvokerImpl implements CommandInvoker {
     }
 
     private Command getCommand(String command, Scanner scanner, String parameter) {
-        return switch (Commands.findCommand(command)) {
+        return switch (Commands.findCommand(command, parameter)) {
             case HELP -> new InformationCommand(HELP);
             case INFO -> new InformationCommand(INFO);
             case SHOW_ALL_ITEMS -> new InformationCommand(SHOW_ALL_ITEMS);
