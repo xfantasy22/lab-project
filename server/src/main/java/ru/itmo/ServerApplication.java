@@ -61,16 +61,23 @@ public class ServerApplication {
             if (line.isEmpty()) {
                 return true;
             }
-            if (Command.SAVE_COLLECTION_INTO_FILE.getCommand().equals(line)) {
-                context.getRouteHolder().writeToFile(fileName);
-                return true;
-            }
-            if (Command.EXIT.getCommand().equals(line)) {
-                context.getRouteHolder().writeToFile(fileName);
-                return false;
-            }
-            log.error("Wrong command: {}", line);
+            return handleServerCommands(context, fileName, line);
         }
+        return true;
+    }
+
+    private static boolean handleServerCommands(ServerContext context,
+                                                String fileName,
+                                                String command) {
+        if (Command.SAVE_COLLECTION_INTO_FILE.getCommand().equals(command)) {
+            context.getRouteHolder().writeToFile(fileName);
+            return true;
+        }
+        if (Command.EXIT.getCommand().equals(command)) {
+            context.getRouteHolder().writeToFile(fileName);
+            return false;
+        }
+        log.error("Wrong command: {}", command);
         return true;
     }
 
