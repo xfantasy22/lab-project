@@ -20,7 +20,6 @@ public class WriteCommand {
         put(INSERT_ITEM_AT_INDEX, (r, n) -> ROUTE_HOLDER.insertElementAtIndex(n.intValue(), r));
         put(UPDATE_ITEM_BY_ID, (r, n) -> ROUTE_HOLDER.updateElement(n.longValue(), r));
         put(REMOVE_ALL_ITEMS_BY_DISTANCE, (r, n) -> ROUTE_HOLDER.removeElementsIfDistanceAreEqual(n.longValue()));
-        put(CLEAR_COLLECTION, (r, n) -> ROUTE_HOLDER.clear());
         put(REMOVE_LOWER, (r, n) -> ROUTE_HOLDER.removeElementsLessThanLower(r));
         put(ADD_NEW_ITEM_IF_MAX, (r, n) -> ROUTE_HOLDER.addElementIfMax(r));
         put(REMOVE_ITEM_BY_ID, (r, n) -> ROUTE_HOLDER.removeElementById(n.longValue()));

@@ -16,7 +16,7 @@ public class RouteHolderImpl implements RouteHolder {
     private static ZonedDateTime updateTime = CREATION_TIME;
     private static Long startId = 1L;
 
-    private Route addElement(Route route, Integer value) {
+    private void addElement(Route route, Integer value) {
         route = route.toBuilder().id(getNextId()).creationTime(ZonedDateTime.now()).build();
         if (value == null) {
             ROUTES.add(route);
@@ -26,7 +26,6 @@ public class RouteHolderImpl implements RouteHolder {
             log.info("Route has been added: {}, by index: {}", route, value);
         }
         updateTime = ZonedDateTime.now();
-        return route;
     }
 
     public void addElement(Route route) {

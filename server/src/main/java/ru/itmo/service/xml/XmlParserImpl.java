@@ -32,7 +32,6 @@ public class XmlParserImpl implements XmlParser {
             JAXB.marshal(routes, fileOutputStream);
             log.info("File has been written: {}", fileName);
         } catch (Exception e) {
-            log.error(e.getMessage());
             throw new RuntimeException(e.getMessage());
         }
     }

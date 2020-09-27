@@ -63,7 +63,7 @@ public class ServerApplication {
             }
             if (Command.SAVE_COLLECTION_INTO_FILE.getCommand().equals(line)) {
                 context.getRouteHolder().writeToFile(fileName);
-                System.out.println("saved");
+                return true;
             }
             if (Command.EXIT.getCommand().equals(line)) {
                 context.getRouteHolder().writeToFile(fileName);

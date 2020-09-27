@@ -24,6 +24,7 @@ public class ReadCommand {
         put(SHOW_ALL_ITEMS, ROUTE_HOLDER::showAllElements);
         put(MAX_ITEM_BY_NAME, ROUTE_HOLDER::getElementByMaxName);
         put(GROUP_BY_ID, ROUTE_HOLDER::groupCountingById);
+        put(CLEAR_COLLECTION, getClear());
     }};
 
     public ServerResponse getResult(ClientRequest request) {
@@ -39,6 +40,11 @@ public class ReadCommand {
                     .error(exception.getMessage())
                     .build();
         }
+    }
+
+    private Supplier<String> getClear() {
+        ROUTE_HOLDER.clear();
+        return () -> "success";
     }
 
     private Supplier<String> getHelp() {
