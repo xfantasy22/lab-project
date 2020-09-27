@@ -55,7 +55,7 @@ public class RouteHolderImpl implements RouteHolder {
                 .distance(updated.getDistance() != 0 ? updated.getDistance() : exist.getDistance())
                 .build();
 
-        removeElementById(exist.getId());
+        ROUTES.removeIf(value -> value.getId().equals(exist.getId()));
         ROUTES.add(updatedRoute);
         log.info("Route has been updated: {}", updatedRoute);
         updateTime = ZonedDateTime.now();
