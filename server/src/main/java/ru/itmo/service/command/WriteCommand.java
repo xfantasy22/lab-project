@@ -15,7 +15,7 @@ import static ru.itmo.model.Command.*;
 public class WriteCommand {
     private static final RouteHolder ROUTE_HOLDER = ServerContext.getInstance().getRouteHolder();
 
-    private final Map<Command, BiConsumer<Route, Number>> WRITE_COMMAND = new HashMap<>() {{
+    private final Map<Command, BiConsumer<Route, Number>> WRITE_COMMAND = new HashMap<Command, BiConsumer<Route, Number>>() {{
         put(ADD_NEW_ITEM, (r, n) -> ROUTE_HOLDER.addElement(r));
         put(INSERT_ITEM_AT_INDEX, (r, n) -> ROUTE_HOLDER.insertElementAtIndex(n.intValue(), r));
         put(UPDATE_ITEM_BY_ID, (r, n) -> ROUTE_HOLDER.updateElement(n.longValue(), r));

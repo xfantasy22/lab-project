@@ -18,7 +18,7 @@ import static ru.itmo.model.Command.*;
 public class ReadCommand {
     private static final RouteHolder ROUTE_HOLDER = ServerContext.getInstance().getRouteHolder();
 
-    private final Map<Command, Supplier<String>> READ_COMMAND = new HashMap<>() {{
+    private final Map<Command, Supplier<String>> READ_COMMAND = new HashMap<Command, Supplier<String>>() {{
         put(HELP, getHelp());
         put(INFO, ROUTE_HOLDER::getInfo);
         put(SHOW_ALL_ITEMS, ROUTE_HOLDER::showAllElements);
