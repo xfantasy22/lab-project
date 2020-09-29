@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.channels.DatagramChannel;
 import java.util.Collections;
@@ -48,9 +49,9 @@ public class ServerImpl implements Server {
             return null;
         }
         log.info("Connection established, address: {}", address);
-        buffer.flip();
+        ((Buffer)buffer).flip();
         ClientRequest request = objectMapper.readValue(buffer.array(), ClientRequest.class);
-        buffer.clear();
+        ((Buffer)buffer).clear();
         return Collections.singletonMap(address, request);
     }
 
