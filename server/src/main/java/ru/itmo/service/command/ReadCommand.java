@@ -43,8 +43,10 @@ public class ReadCommand {
     }
 
     private Supplier<String> getClear() {
-        ROUTE_HOLDER.clear();
-        return () -> "success";
+        return () -> {
+            ROUTE_HOLDER.clear();
+            return "success";
+        };
     }
 
     private Supplier<String> getHelp() {
