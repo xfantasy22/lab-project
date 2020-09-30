@@ -46,4 +46,8 @@ public enum Command {
     private static Predicate<Command> isWrite() {
         return value -> value == ADD_NEW_ITEM_IF_MAX || value == ADD_NEW_ITEM || value == REMOVE_LOWER;
     }
+
+    public static boolean requireRoute(Command command) {
+        return REMOVE_ALL_ITEMS_BY_DISTANCE != command && REMOVE_ITEM_BY_ID != command;
+    }
 }

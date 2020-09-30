@@ -4,6 +4,7 @@ import ru.itmo.context.ClientContext;
 import ru.itmo.exception.ValidateException;
 import ru.itmo.model.ClientRequest;
 import ru.itmo.model.Command;
+import ru.itmo.model.Route;
 import ru.itmo.util.ParseUtils;
 
 import java.util.List;
@@ -74,8 +75,9 @@ public class CommandInvokerImpl implements CommandInvoker {
 
     private ClientRequest createQuery(Scanner scanner, Command command, String argument) {
         RouteCreator creator = ClientContext.getInstance().getRouteCreator();
+        Route route = Command.requireRoute(command) ? creator.createRoute(scanner, Command.UPDATE_ITEM_BY_ID == command) : null;
         return ClientRequest.builder()
-                .route(creator.createRoute(scanner, Command.UPDATE_ITEM_BY_ID == command))
+                .route(route)
                 .argument(ParseUtils.parseArgument(argument))
                 .command(command)
                 .build();
