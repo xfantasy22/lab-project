@@ -31,6 +31,7 @@ public class ServerImpl implements Server {
         log.info("Server host: {}, port: {}", InetAddress.getLocalHost().getHostName(), Constant.SERVER_PORT);
     }
 
+
     @Override
     @SneakyThrows
     public void receiveAndSend() {
