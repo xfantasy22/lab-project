@@ -25,6 +25,7 @@ public class HibernateUtils {
             try {
                 Configuration configuration = new Configuration();
 
+
                 Properties properties = new Properties();
                 properties.put(Environment.DRIVER, "org.postgresql.Driver");
                 properties.put(Environment.URL, "jdbc:postgresql://localhost:5432/" + DATABASE_NAME);
