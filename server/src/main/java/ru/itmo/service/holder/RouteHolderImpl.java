@@ -3,51 +3,49 @@ package ru.itmo.service.holder;
 import lombok.extern.slf4j.Slf4j;
 import ru.itmo.context.ServerContext;
 import ru.itmo.exception.ValidateException;
-import ru.itmo.model.Route;
+import ru.itmo.model.ClientRequest;
+import ru.itmo.model.domain.User;
+import ru.itmo.model.dto.RouteView;
 
 import java.time.ZonedDateTime;
-import java.util.*;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
 @Slf4j
 public class RouteHolderImpl implements RouteHolder {
-    private static final List<Route> ROUTES = new ArrayList<>();
+    private static final List<RouteView> ROUTES = new CopyOnWriteArrayList<>();
     private static final ZonedDateTime CREATION_TIME = ZonedDateTime.now();
     private static ZonedDateTime updateTime = CREATION_TIME;
-    private static Long startId = 1L;
 
-    private void addElement(Route route, Integer value) {
-        route = route.toBuilder().id(getNextId()).creationTime(ZonedDateTime.now()).build();
-        if (value == null) {
-            ROUTES.add(route);
-            log.info("Route has been added: {}", route);
-        } else {
-            ROUTES.add(value, route);
-            log.info("Route has been added: {}, by index: {}", route, value);
-        }
+    public void addElement(ClientRequest request) {
+        RouteView routeView = request.getRoute();
+        ServerContext.getInstance().getRouteDao().save(routeView, request.getUser());
+        ROUTES.add(routeView);
+        log.info("Route has been added: {}", routeView);
         updateTime = ZonedDateTime.now();
     }
 
-    public void addElement(Route route) {
-        addElement(route, null);
-    }
-
-    public void updateElement(long id, Route route) {
+    public void updateElement(ClientRequest request) {
+        long id = Objects.requireNonNull(request.getArgument()).longValue();
         if (!checkExistsId(id)) {
             throw new ValidateException("Id not found, id: " + id);
         }
         ROUTES.stream()
                 .filter(element -> element.getId().equals(id))
                 .findFirst()
-                .map(element -> updateElement(element, route))
+                .map(element -> updateElement(element, request.getRoute(), request.getUser()))
                 .orElseThrow(() -> new RuntimeException(String.format("Element cannot be updated, id: %s", id)));
     }
 
-    private Route updateElement(Route exist, Route updated) {
+    private RouteView updateElement(RouteView exist, RouteView updated, User user) {
         if (Objects.equals(exist, updated)) {
             throw new ValidateException(String.format("Elements are equal. \n Exist: %s \n Updated: %s", exist, updated));
         }
-        Route updatedRoute = exist.toBuilder()
+        RouteView updatedRoute = exist.toBuilder()
                 .name(updated.getName() != null ? updated.getName() : exist.getName())
                 .coordinates(updated.getCoordinates() != null ? updated.getCoordinates() : exist.getCoordinates())
                 .from(updated.getFrom() != null ? updated.getFrom() : exist.getFrom())
@@ -55,6 +53,7 @@ public class RouteHolderImpl implements RouteHolder {
                 .distance(updated.getDistance() != 0 ? updated.getDistance() : exist.getDistance())
                 .build();
 
+        ServerContext.getInstance().getRouteDao().update(updatedRoute, user);
         ROUTES.removeIf(value -> value.getId().equals(exist.getId()));
         ROUTES.add(updatedRoute);
         log.info("Route has been updated: {}", updatedRoute);
@@ -62,7 +61,8 @@ public class RouteHolderImpl implements RouteHolder {
         return updated;
     }
 
-    public void removeElementById(Long id) {
+    public void removeElementById(ClientRequest request) {
+        long id = Objects.requireNonNull(request.getArgument()).longValue();
         ROUTES.removeIf(element -> {
             if (element.getId().equals(id)) {
                 log.info("Element has been removed by id: {}, element: {}", id, element);
@@ -73,15 +73,19 @@ public class RouteHolderImpl implements RouteHolder {
         updateTime = ZonedDateTime.now();
     }
 
-    public void clear() {
+    public void clear(User user) {
+        ServerContext.getInstance().getRouteDao().deleteAll(user);
         ROUTES.clear();
-        startId = 1L;
         updateTime = ZonedDateTime.now();
         log.info("Collection has been cleaned");
     }
 
-    public void insertElementAtIndex(int index, Route route) {
-        addElement(route, checkIndex(index));
+    public void insertElementAtIndex(ClientRequest request) {
+        int index = checkIndex(Objects.requireNonNull(request.getArgument()).intValue());
+        ROUTES.add(index, request.getRoute());
+        ServerContext.getInstance().getRouteDao().save(request.getRoute(), request.getUser());
+        log.info("Route has been added: {}, by index: {}", request.getRoute(), request.getArgument());
+        updateTime = ZonedDateTime.now();
     }
 
     private int checkIndex(int index) {
@@ -91,19 +95,22 @@ public class RouteHolderImpl implements RouteHolder {
         return index;
     }
 
-    public void addElementIfMax(Route route) {
-        int compareResult = route.compareTo(Collections.max(ROUTES));
-
+    public void addElementIfMax(ClientRequest request) {
+        RouteView routeView = request.getRoute();
+        int compareResult = Objects.requireNonNull(routeView).compareTo(Collections.max(ROUTES));
         if (compareResult > 0) {
-            addElement(route);
+            ServerContext.getInstance().getRouteDao().save(routeView, request.getUser());
+            ROUTES.add(routeView);
             return;
         }
         throw new RuntimeException("Element cannot be inserted");
     }
 
-    public void removeElementsLessThanLower(Route route) {
+    public void removeElementsLessThanLower(ClientRequest request) {
+        RouteView route = request.getRoute();
         ROUTES.removeIf(value -> {
-            if (route.compareTo(value) < 0) {
+            if (Objects.requireNonNull(route).compareTo(value) < 0) {
+                ServerContext.getInstance().getRouteDao().deleteById(value.getId(), request.getUser());
                 log.info("Element removed: {}", value);
                 updateTime = ZonedDateTime.now();
                 return true;
@@ -112,9 +119,11 @@ public class RouteHolderImpl implements RouteHolder {
         });
     }
 
-    public void removeElementsIfDistanceAreEqual(long distance) {
+    public void removeElementsIfDistanceAreEqual(ClientRequest request) {
+        long distance = Objects.requireNonNull(request.getArgument()).longValue();
         ROUTES.removeIf(value -> {
             if (value.getDistance() == distance) {
+                ServerContext.getInstance().getRouteDao().deleteByDistance(distance, request.getUser());
                 updateTime = ZonedDateTime.now();
                 log.info("Element: {} with distance {} has been deleted", value, distance);
                 return true;
@@ -126,22 +135,20 @@ public class RouteHolderImpl implements RouteHolder {
 
     public String getElementByMaxName() {
         return ROUTES.stream()
-                .max(Comparator.comparing(Route::getName))
+                .max(Comparator.comparing(RouteView::getName))
                 .orElseThrow(() -> new RuntimeException("Max element is not present"))
                 .toString();
     }
 
     public String groupCountingById() {
-        return ROUTES.stream().collect(Collectors.groupingBy(Route::getId)).toString();
+        return ROUTES.stream().collect(Collectors.groupingBy(RouteView::getId)).toString();
     }
 
     public String showAllElements() {
-        if (ROUTES.isEmpty()) {
-            return "Collection is empty";
-        }
+        System.out.println(ServerContext.getInstance().getRouteDao().findAll());
         StringBuilder stringBuilder = new StringBuilder();
         ROUTES.stream()
-                .sorted(Comparator.comparing(Route::getName))
+                .sorted(Comparator.comparing(RouteView::getName))
                 .forEach(value -> stringBuilder.append(value).append("\n"));
         return stringBuilder.toString();
     }
@@ -150,23 +157,10 @@ public class RouteHolderImpl implements RouteHolder {
         return ROUTES.stream().anyMatch(value -> value.getId().equals(id));
     }
 
-    public void writeToFile(String fileName) {
-        ServerContext context = ServerContext.getInstance();
-        context.getXmlParser().writeDataToFile(ROUTES, fileName);
-    }
-
-    public void initCollection(List<Route> routeList) {
-        startId = routeList.stream()
-                .map(Route::getId)
-                .max(Comparator.comparing(Long::longValue))
-                .orElse(1L);
-        ROUTES.addAll(routeList);
+    public void initCollection() {
+        ROUTES.addAll(ServerContext.getInstance().getRouteDao().findAll());
         log.info("Collection has been initialized");
         updateTime = ZonedDateTime.now();
-    }
-
-    private Long getNextId() {
-        return startId++;
     }
 
     public String getInfo() {

@@ -10,13 +10,20 @@ import ru.itmo.service.holder.RouteHolder;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Callable;
 import java.util.function.Supplier;
 
 import static ru.itmo.model.Command.*;
 
 @Slf4j
-public class ReadCommand {
+public class ReadCommand implements Callable<ServerResponse> {
     private static final RouteHolder ROUTE_HOLDER = ServerContext.getInstance().getRouteHolder();
+
+    private final ClientRequest request;
+
+    public ReadCommand(ClientRequest request) {
+        this.request = request;
+    }
 
     private final Map<Command, Supplier<String>> READ_COMMAND = new HashMap<Command, Supplier<String>>() {{
         put(HELP, getHelp());
@@ -27,24 +34,9 @@ public class ReadCommand {
         put(CLEAR_COLLECTION, getClear());
     }};
 
-    public ServerResponse getResult(ClientRequest request) {
-        try {
-            return ServerResponse.builder()
-                    .status(Status.Success)
-                    .response(READ_COMMAND.get(request.getCommand()).get())
-                    .build();
-        } catch (Exception exception) {
-            log.error(exception.getMessage());
-            return ServerResponse.builder()
-                    .status(Status.Failed)
-                    .error(exception.getMessage())
-                    .build();
-        }
-    }
-
     private Supplier<String> getClear() {
         return () -> {
-            ROUTE_HOLDER.clear();
+            ROUTE_HOLDER.clear(request.getUser());
             return "success";
         };
     }
@@ -66,5 +58,21 @@ public class ReadCommand {
                 "remove_all_by_distance distance : удалить из коллекции все элементы, значение поля distance которого эквивалентно заданному\n" +
                 "max_by_name : вывести любой объект из коллекции, значение поля name которого является максимальным\n" +
                 "group_counting_by_id : сгруппировать элементы коллекции по значению поля id, вывести количество элементов в каждой группе";
+    }
+
+    @Override
+    public ServerResponse call() {
+        try {
+            return ServerResponse.builder()
+                    .status(Status.Success)
+                    .response(READ_COMMAND.get(request.getCommand()).get())
+                    .build();
+        } catch (Exception exception) {
+            log.error(exception.getMessage());
+            return ServerResponse.builder()
+                    .status(Status.Failed)
+                    .error(exception.getMessage())
+                    .build();
+        }
     }
 }

@@ -25,7 +25,7 @@ public class ClientImpl implements Client {
         int port = ThreadLocalRandom.current().nextInt(0, 65535);
         System.out.printf("Client port: %s%n", port);
         datagramSocket = new DatagramSocket(port);
-        datagramSocket.setSoTimeout(1000); // 1 sec
+        datagramSocket.setSoTimeout(2000); // 2 sec
     }
 
     @Override
@@ -67,6 +67,9 @@ public class ClientImpl implements Client {
         ServerResponse serverResponse = objectMapper.readValue(data, ServerResponse.class);
         if (serverResponse.getStatus() == Status.Failed) {
             throw new ValidateException("Command failed. Error: " + serverResponse.getError());
+        }
+        if (serverResponse.getStatus() == Status.RequireLogin) {
+            throw new ValidateException(serverResponse.getError());
         }
         return serverResponse.getResponse();
     }

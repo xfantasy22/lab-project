@@ -4,7 +4,8 @@ import ru.itmo.context.ClientContext;
 import ru.itmo.exception.ValidateException;
 import ru.itmo.model.ClientRequest;
 import ru.itmo.model.Command;
-import ru.itmo.model.Route;
+import ru.itmo.model.domain.User;
+import ru.itmo.model.dto.RouteView;
 import ru.itmo.util.ParseUtils;
 
 import java.util.List;
@@ -14,8 +15,23 @@ import static ru.itmo.util.LogUtils.log;
 
 public class CommandInvokerImpl implements CommandInvoker {
 
+    private User user;
+
     @Override
     public boolean invoke(Scanner scanner) {
+        if (user == null) {
+            try {
+                return initUser(scanner);
+            } catch (Exception e) {
+                System.out.println(e.getMessage());
+                System.out.println("Try again? Y/N");
+                if ("y".equalsIgnoreCase(scanner.nextLine())) {
+                    user = null;
+                    return true;
+                }
+                return false;
+            }
+        }
         System.out.println("Enter a command: ");
         try {
             String value = scanner.nextLine();
@@ -44,7 +60,9 @@ public class CommandInvokerImpl implements CommandInvoker {
         if (Command.isWriteCommand(command)) {
             sendDataWithContent(command, list, scanner);
         } else {
-            ClientRequest clientRequest = ClientRequest.builder().command(command).build();
+            ClientRequest clientRequest = ClientRequest.builder()
+                    .user(user)
+                    .command(command).build();
             System.out.println(client.sendAndReceiveData(clientRequest));
         }
     }
@@ -73,11 +91,40 @@ public class CommandInvokerImpl implements CommandInvoker {
         }
     }
 
+    public boolean initUser(Scanner scanner) {
+        System.out.println("Already have an account? Y/N");
+        if (createOrLoginUser(scanner, true)) {
+            return true;
+        }
+
+        System.out.println("Want to create an account? Y/N");
+        return createOrLoginUser(scanner, false);
+    }
+
+    public boolean createOrLoginUser(Scanner scanner, boolean isLogin) {
+        if ("y".equalsIgnoreCase(scanner.nextLine())) {
+            User.UserBuilder builder = User.builder();
+            System.out.println("Enter a username");
+            builder.username(scanner.nextLine());
+            System.out.println("Enter a password");
+            builder.password(scanner.nextLine());
+            user = builder.build();
+            ClientRequest request = ClientRequest.builder()
+                    .user(user)
+                    .command(isLogin ? Command.SIGN_IN : Command.SIGN_UP)
+                    .build();
+            System.out.println(ClientContext.getInstance().getClient().sendAndReceiveData(request));
+            return true;
+        }
+        return false;
+    }
+
     private ClientRequest createQuery(Scanner scanner, Command command, String argument) {
         RouteCreator creator = ClientContext.getInstance().getRouteCreator();
-        Route route = Command.requireRoute(command) ? creator.createRoute(scanner, Command.UPDATE_ITEM_BY_ID == command) : null;
+        RouteView route = Command.requireRoute(command) ? creator.createRoute(scanner, Command.UPDATE_ITEM_BY_ID == command) : null;
         return ClientRequest.builder()
                 .route(route)
+                .user(user)
                 .argument(ParseUtils.parseArgument(argument))
                 .command(command)
                 .build();

@@ -1,11 +1,11 @@
 package ru.itmo.service;
 
-import ru.itmo.model.Route;
+import ru.itmo.model.dto.RouteView;
 
 import java.util.Scanner;
 
 public interface RouteCreator {
 
-    Route createRoute(Scanner scanner, boolean isUpdate);
+    RouteView createRoute(Scanner scanner, boolean isUpdate);
 
 }

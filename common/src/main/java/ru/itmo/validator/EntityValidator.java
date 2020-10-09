@@ -1,9 +1,9 @@
 package ru.itmo.validator;
 
 import ru.itmo.exception.ValidateException;
-import ru.itmo.model.Coordinates;
-import ru.itmo.model.Location;
-import ru.itmo.model.Route;
+import ru.itmo.model.dto.CoordinatesView;
+import ru.itmo.model.dto.LocationView;
+import ru.itmo.model.dto.RouteView;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -22,7 +22,7 @@ public class EntityValidator {
         }
     }
 
-    public static Coordinates checkCoordinates(Coordinates coordinates) {
+    public static CoordinatesView checkCoordinates(CoordinatesView coordinates) {
         checkNull(coordinates, "Coordinates");
         checkNull(coordinates.getX(), POSITION_X);
 
@@ -37,7 +37,7 @@ public class EntityValidator {
         return coordinates;
     }
 
-    public static Location checkLocation(Location location) {
+    public static LocationView checkLocation(LocationView location) {
         checkNull(location, LOCATION);
         checkNull(location.getX(), POSITION_X);
         checkNull(location.getY(), POSITION_Y);
@@ -61,8 +61,8 @@ public class EntityValidator {
         return value;
     }
 
-    public static List<Route> checkRoutes(List<Route> routeList) {
-        List<Route> routes = new ArrayList<>();
+    public static List<RouteView> checkRoutes(List<RouteView> routeList) {
+        List<RouteView> routes = new ArrayList<>();
         if (routeList == null || routeList.isEmpty()) {
             return Collections.emptyList();
         }
@@ -91,10 +91,10 @@ public class EntityValidator {
         return routes;
     }
 
-    private static List<Route> removeDuplicatesById(List<Route> routes) {
+    private static List<RouteView> removeDuplicatesById(List<RouteView> routes) {
         return routes.stream()
                 .filter(value -> Objects.nonNull(value.getId()))
-                .filter(distinctById(Route::getId))
+                .filter(distinctById(RouteView::getId))
                 .filter(value -> value.getId() > 0L)
                 .collect(Collectors.toList());
     }

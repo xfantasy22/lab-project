@@ -2,50 +2,47 @@ package ru.itmo.context;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Value;
-import ru.itmo.service.Server;
-import ru.itmo.service.ServerImpl;
-import ru.itmo.service.command.ReadCommand;
-import ru.itmo.service.command.WriteCommand;
+import ru.itmo.dao.RouteDao;
+import ru.itmo.dao.RouteDaoImpl;
+import ru.itmo.dao.UserDao;
+import ru.itmo.dao.UserDaoImpl;
 import ru.itmo.service.holder.RouteHolder;
 import ru.itmo.service.holder.RouteHolderImpl;
-import ru.itmo.service.xml.XmlParser;
-import ru.itmo.service.xml.XmlParserImpl;
 
 @Value
 public class ServerContext {
-    private static final ServerContext SERVER_CONTEXT = new ServerContext();
+    private static volatile ServerContext SERVER_CONTEXT;
     private static final RouteHolder ROUTE_HOLDER = new RouteHolderImpl();
-    private static final XmlParser XML_PARSER = new XmlParserImpl();
-    private static final Server SERVER = new ServerImpl();
+    private static final RouteDao ROUTE_DAO = new RouteDaoImpl();
+    private static final UserDao USER_DAO = new UserDaoImpl();
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
-    private static final ReadCommand READ_COMMAND = new ReadCommand();
-    private static final WriteCommand WRITE_COMMAND = new WriteCommand();
 
     public static ServerContext getInstance() {
-        return SERVER_CONTEXT;
+        ServerContext context = SERVER_CONTEXT;
+        if (context == null) {
+            synchronized (ServerContext.class) {
+                context = SERVER_CONTEXT;
+                if (context == null) {
+                    context = SERVER_CONTEXT = new ServerContext();
+                }
+            }
+        }
+        return context;
     }
 
     public RouteHolder getRouteHolder() {
         return ROUTE_HOLDER;
     }
 
-    public XmlParser getXmlParser() {
-        return XML_PARSER;
-    }
-
-    public Server getServer() {
-        return SERVER;
-    }
-
     public ObjectMapper getObjectMapper() {
         return OBJECT_MAPPER;
     }
 
-    public ReadCommand getReadCommand() {
-        return READ_COMMAND;
+    public RouteDao getRouteDao() {
+        return ROUTE_DAO;
     }
 
-    public WriteCommand getWriteCommand() {
-        return WRITE_COMMAND;
+    public UserDao getUserDao() {
+        return USER_DAO;
     }
 }

@@ -1,17 +1,16 @@
 package ru.itmo.service.holder;
 
-import ru.itmo.model.Route;
-
-import java.util.List;
+import ru.itmo.model.ClientRequest;
+import ru.itmo.model.domain.User;
 
 public interface RouteHolder {
-    void addElement(Route route);
+    void addElement(ClientRequest request);
 
-    void addElementIfMax(Route route);
+    void addElementIfMax(ClientRequest request);
 
-    void insertElementAtIndex(int index, Route route);
+    void insertElementAtIndex(ClientRequest request);
 
-    void updateElement(long id, Route route);
+    void updateElement(ClientRequest request);
 
     String getElementByMaxName();
 
@@ -19,19 +18,17 @@ public interface RouteHolder {
 
     boolean checkExistsId(Long id);
 
-    void writeToFile(String fileName);
-
     String groupCountingById();
 
     String showAllElements();
 
-    void removeElementById(Long id);
+    void removeElementById(ClientRequest request);
 
-    void removeElementsLessThanLower(Route route);
+    void removeElementsLessThanLower(ClientRequest request);
 
-    void removeElementsIfDistanceAreEqual(long distance);
+    void removeElementsIfDistanceAreEqual(ClientRequest request);
 
-    void clear();
+    void clear(User user);
 
-    void initCollection(List<Route> routeList);
+    void initCollection();
 }

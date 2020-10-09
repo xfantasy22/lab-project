@@ -25,7 +25,9 @@ public enum Command {
     REMOVE_ALL_ITEMS_BY_DISTANCE("remove_all_by_distance", true),
     MAX_ITEM_BY_NAME("max_by_name", false),
     GROUP_BY_ID("group_counting_by_id", false),
-    UPDATE_ITEM_BY_ID("update", true);
+    UPDATE_ITEM_BY_ID("update", true),
+    SIGN_IN("sign_in", false),
+    SIGN_UP("sign_up", false);
 
     private final String command;
     private final boolean requireArgument;

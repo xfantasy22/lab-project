@@ -7,74 +7,57 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import ru.itmo.context.ServerContext;
 import ru.itmo.model.Command;
-import ru.itmo.model.Route;
+import ru.itmo.service.Server;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.List;
 
 @Slf4j
 public class ServerApplication {
 
-    private static String name;
-
     @SneakyThrows
     public static void main(String[] args) {
         log.info("Server started");
+
+        // db migration
+//        Flyway flyway = Flyway.configure().dataSource("jdbc:postgresql://localhost:5432/" + DATABASE_NAME, USERNAME, PASSWORD).load();
+//        flyway.migrate();
+
+        //config jackson
         configureJackson();
-        ServerContext context = ServerContext.getInstance();
+
+        ServerContext.getInstance().getRouteHolder().initCollection();
+        //program
+        Server server = new Server();
+        new Thread(server).start();
         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(System.in));
-        if (init(args[0], bufferedReader)) {
-            boolean running = true;
-            while (running) {
-                try {
-                    running = serverCommand(bufferedReader, context, name);
-                    context.getServer().receiveAndSend();
-                } catch (Exception e) {
-                    log.error("Internal server error: {}", e.getMessage());
+        boolean running = true;
+        while (running) {
+            try {
+                running = serverCommand(bufferedReader);
+                if (!running) {
+                    server.stopServer();
                 }
+            } catch (Exception e) {
+                log.error("Internal server error: {}", e.getMessage());
             }
         }
         bufferedReader.close();
     }
 
-    public static boolean init(String fileName, BufferedReader bufferedReader) throws IOException {
-        try {
-            name = fileName;
-            List<Route> routeList = new ArrayList<>(ServerContext.getInstance().getXmlParser().readDataFromFile(fileName));
-            ServerContext.getInstance().getRouteHolder().initCollection(routeList);
-            return true;
-        } catch (Exception exception) {
-            log.error(exception.getMessage());
-            System.out.printf("Continue with such file: %s. Y/N%n", name);
-            return "y".equalsIgnoreCase(bufferedReader.readLine());
-        }
-    }
-
-    private static boolean serverCommand(BufferedReader bufferedReader,
-                                         ServerContext context,
-                                         String fileName) throws Exception {
+    private static boolean serverCommand(BufferedReader bufferedReader) throws Exception {
         if (bufferedReader.ready()) {
             String line = bufferedReader.readLine();
             if (line.isEmpty()) {
                 return true;
             }
-            return handleServerCommands(context, fileName, line);
+            return handleServerCommands(line);
         }
         return true;
     }
 
-    private static boolean handleServerCommands(ServerContext context,
-                                                String fileName,
-                                                String command) {
-        if (Command.SAVE_COLLECTION_INTO_FILE.getCommand().equals(command)) {
-            context.getRouteHolder().writeToFile(fileName);
-            return true;
-        }
+    private static boolean handleServerCommands(String command) {
         if (Command.EXIT.getCommand().equals(command)) {
-            context.getRouteHolder().writeToFile(fileName);
             return false;
         }
         log.error("Wrong command: {}", command);

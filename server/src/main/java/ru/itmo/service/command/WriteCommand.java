@@ -2,32 +2,45 @@ package ru.itmo.service.command;
 
 import lombok.extern.slf4j.Slf4j;
 import ru.itmo.context.ServerContext;
-import ru.itmo.model.*;
+import ru.itmo.model.ClientRequest;
+import ru.itmo.model.Command;
+import ru.itmo.model.ServerResponse;
+import ru.itmo.model.Status;
+import ru.itmo.model.dto.RouteView;
 import ru.itmo.service.holder.RouteHolder;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Callable;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 import static ru.itmo.model.Command.*;
 
 @Slf4j
-public class WriteCommand {
+public class WriteCommand implements Callable<ServerResponse> {
     private static final RouteHolder ROUTE_HOLDER = ServerContext.getInstance().getRouteHolder();
 
-    private final Map<Command, BiConsumer<Route, Number>> WRITE_COMMAND = new HashMap<Command, BiConsumer<Route, Number>>() {{
-        put(ADD_NEW_ITEM, (r, n) -> ROUTE_HOLDER.addElement(r));
-        put(INSERT_ITEM_AT_INDEX, (r, n) -> ROUTE_HOLDER.insertElementAtIndex(n.intValue(), r));
-        put(UPDATE_ITEM_BY_ID, (r, n) -> ROUTE_HOLDER.updateElement(n.longValue(), r));
-        put(REMOVE_ALL_ITEMS_BY_DISTANCE, (r, n) -> ROUTE_HOLDER.removeElementsIfDistanceAreEqual(n.longValue()));
-        put(REMOVE_LOWER, (r, n) -> ROUTE_HOLDER.removeElementsLessThanLower(r));
-        put(ADD_NEW_ITEM_IF_MAX, (r, n) -> ROUTE_HOLDER.addElementIfMax(r));
-        put(REMOVE_ITEM_BY_ID, (r, n) -> ROUTE_HOLDER.removeElementById(n.longValue()));
+    private final ClientRequest request;
+
+    private final Map<Command, Consumer<ClientRequest>> WRITE_COMMAND = new HashMap<Command, Consumer<ClientRequest>>() {{
+        put(ADD_NEW_ITEM, ROUTE_HOLDER::addElement);
+        put(INSERT_ITEM_AT_INDEX, ROUTE_HOLDER::insertElementAtIndex);
+        put(UPDATE_ITEM_BY_ID, ROUTE_HOLDER::updateElement);
+        put(REMOVE_ALL_ITEMS_BY_DISTANCE, ROUTE_HOLDER::removeElementsIfDistanceAreEqual);
+        put(REMOVE_LOWER, ROUTE_HOLDER::removeElementsLessThanLower);
+        put(ADD_NEW_ITEM_IF_MAX, ROUTE_HOLDER::addElementIfMax);
+        put(REMOVE_ITEM_BY_ID, ROUTE_HOLDER::removeElementById);
     }};
 
-    public ServerResponse getResult(ClientRequest request) {
+    public WriteCommand(ClientRequest request) {
+        this.request = request;
+    }
+
+    @Override
+    public ServerResponse call() {
         try {
-            WRITE_COMMAND.get(request.getCommand()).accept(request.getRoute(), request.getArgument());
+            WRITE_COMMAND.get(request.getCommand()).accept(request);
             return ServerResponse.builder()
                     .response("Success")
                     .status(Status.Success)

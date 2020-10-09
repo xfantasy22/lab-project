@@ -8,13 +8,14 @@ import ru.itmo.validator.FileValidator;
 import java.io.File;
 import java.util.Scanner;
 
+import static ru.itmo.validator.FileValidator.checkReadProperty;
+
 public class ScriptExecutorImpl implements ScriptExecutor {
     @Override
     public void execute(String fileName) {
         try {
             File scriptFile = new File(fileName);
-            FileValidator.checkReadProperty(scriptFile);
-            runScript(scriptFile);
+            runScript(checkReadProperty(scriptFile));
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
