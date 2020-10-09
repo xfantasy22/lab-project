@@ -89,9 +89,7 @@ public class RouteDaoImpl implements RouteDao {
         CriteriaBuilder cb = session.getCriteriaBuilder();
         CriteriaDelete<Route> cq = cb.createCriteriaDelete(Route.class);
         Root<Route> rootEntry = cq.from(Route.class);
-        cq.where(cb.equal(rootEntry.get("user_id"), user.getId()))
-                .where(cb.equal(rootEntry.get("distance"), distance));
-        session.close();
+        cq.where(cb.equal(rootEntry.get("user_id"), user.getId())).where(cb.equal(rootEntry.get("distance"), distance));
     }
 
     @Override
@@ -103,8 +101,6 @@ public class RouteDaoImpl implements RouteDao {
         CriteriaQuery<Route> all = cq.select(rootEntry);
 
         TypedQuery<Route> allQuery = session.createQuery(all);
-        session.flush();
-        session.close();
         return allQuery.getResultList().stream().map(Mapper::toRouteView).collect(Collectors.toList());
     }
 
@@ -115,6 +111,5 @@ public class RouteDaoImpl implements RouteDao {
         CriteriaDelete<Route> cq = cb.createCriteriaDelete(Route.class);
         Root<Route> rootEntry = cq.from(Route.class);
         cq.where(cb.equal(rootEntry.get("user_id"), user.getId()));
-        session.close();
     }
 }
