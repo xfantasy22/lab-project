@@ -16,14 +16,15 @@ public class HibernateUtils {
     private static StandardServiceRegistry registry;
     private static SessionFactory sessionFactory;
 
-    public static final String DATABASE_NAME = "lab7";
-    public static final String USERNAME = "sergey";
-    public static final String PASSWORD = "qwerty";
+    public static final String DATABASE_NAME = "studs";
+    public static final String USERNAME = "s284757";
+    public static final String PASSWORD = "yza787";
 
     public static SessionFactory getSessionFactory() {
         if (sessionFactory == null) {
             try {
                 Configuration configuration = new Configuration();
+
 
                 Properties properties = new Properties();
                 properties.put(Environment.DRIVER, "org.postgresql.Driver");
