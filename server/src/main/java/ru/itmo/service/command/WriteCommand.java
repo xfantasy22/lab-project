@@ -6,13 +6,11 @@ import ru.itmo.model.ClientRequest;
 import ru.itmo.model.Command;
 import ru.itmo.model.ServerResponse;
 import ru.itmo.model.Status;
-import ru.itmo.model.dto.RouteView;
 import ru.itmo.service.holder.RouteHolder;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import static ru.itmo.model.Command.*;

@@ -2,6 +2,7 @@ package ru.itmo.service.holder;
 
 import lombok.extern.slf4j.Slf4j;
 import ru.itmo.context.ServerContext;
+import ru.itmo.dao.RouteDao;
 import ru.itmo.exception.ValidateException;
 import ru.itmo.model.ClientRequest;
 import ru.itmo.model.domain.User;
@@ -22,7 +23,8 @@ public class RouteHolderImpl implements RouteHolder {
     private static ZonedDateTime updateTime = CREATION_TIME;
 
     public void addElement(ClientRequest request) {
-        RouteView routeView = request.getRoute();
+        RouteView routeView = Objects.requireNonNull(request.getRoute());
+        routeView.setCreationTime(ZonedDateTime.now());
         ServerContext.getInstance().getRouteDao().save(routeView, request.getUser());
         ROUTES.add(routeView);
         log.info("Route has been added: {}", routeView);
@@ -53,19 +55,30 @@ public class RouteHolderImpl implements RouteHolder {
                 .distance(updated.getDistance() != 0 ? updated.getDistance() : exist.getDistance())
                 .build();
 
+        log.debug("Updated route: {}", updatedRoute);
+
         ServerContext.getInstance().getRouteDao().update(updatedRoute, user);
+
         ROUTES.removeIf(value -> value.getId().equals(exist.getId()));
         ROUTES.add(updatedRoute);
+
         log.info("Route has been updated: {}", updatedRoute);
+
         updateTime = ZonedDateTime.now();
-        return updated;
+        return updatedRoute;
     }
 
     public void removeElementById(ClientRequest request) {
+        RouteDao routeDao = ServerContext.getInstance().getRouteDao();
         long id = Objects.requireNonNull(request.getArgument()).longValue();
         ROUTES.removeIf(element -> {
             if (element.getId().equals(id)) {
-                log.info("Element has been removed by id: {}, element: {}", id, element);
+                routeDao.deleteById(element.getId(), request.getUser());
+                if (routeDao.exists(id)) {
+                    log.error("Entity cannot be removed for current user: {}", request.getUser());
+                    return false;
+                }
+                log.info("Element has been removed, element: {}", element);
                 return true;
             }
             return false;
@@ -74,16 +87,20 @@ public class RouteHolderImpl implements RouteHolder {
     }
 
     public void clear(User user) {
-        ServerContext.getInstance().getRouteDao().deleteAll(user);
-        ROUTES.clear();
+        RouteDao routeDao = ServerContext.getInstance().getRouteDao();
+        List<RouteView> routeViews = routeDao.findAllByUser(user);
+        ROUTES.removeIf(routeViews::contains);
+        routeDao.deleteAll(user);
         updateTime = ZonedDateTime.now();
-        log.info("Collection has been cleaned");
+        log.info("Collection has been updated, removed entities: {}", routeViews);
     }
 
     public void insertElementAtIndex(ClientRequest request) {
         int index = checkIndex(Objects.requireNonNull(request.getArgument()).intValue());
-        ROUTES.add(index, request.getRoute());
-        ServerContext.getInstance().getRouteDao().save(request.getRoute(), request.getUser());
+        RouteView routeView = Objects.requireNonNull(request.getRoute());
+        routeView.setCreationTime(ZonedDateTime.now());
+        ServerContext.getInstance().getRouteDao().save(routeView, request.getUser());
+        ROUTES.add(index, routeView);
         log.info("Route has been added: {}, by index: {}", request.getRoute(), request.getArgument());
         updateTime = ZonedDateTime.now();
     }
@@ -107,10 +124,15 @@ public class RouteHolderImpl implements RouteHolder {
     }
 
     public void removeElementsLessThanLower(ClientRequest request) {
-        RouteView route = request.getRoute();
+        RouteDao routeDao = ServerContext.getInstance().getRouteDao();
+        RouteView route = Objects.requireNonNull(request.getRoute());
         ROUTES.removeIf(value -> {
-            if (Objects.requireNonNull(route).compareTo(value) < 0) {
-                ServerContext.getInstance().getRouteDao().deleteById(value.getId(), request.getUser());
+            if (route.compareTo(value) < 0) {
+                routeDao.deleteById(value.getId(), request.getUser());
+                if (routeDao.exists(value.getId())) {
+                    log.error("Entity cannot be removed for current user: {}", request.getUser());
+                    return false;
+                }
                 log.info("Element removed: {}", value);
                 updateTime = ZonedDateTime.now();
                 return true;
@@ -120,12 +142,17 @@ public class RouteHolderImpl implements RouteHolder {
     }
 
     public void removeElementsIfDistanceAreEqual(ClientRequest request) {
+        RouteDao routeDao = ServerContext.getInstance().getRouteDao();
         long distance = Objects.requireNonNull(request.getArgument()).longValue();
         ROUTES.removeIf(value -> {
             if (value.getDistance() == distance) {
-                ServerContext.getInstance().getRouteDao().deleteByDistance(distance, request.getUser());
+                routeDao.deleteByDistance(distance, request.getUser());
+                if (routeDao.exists(value.getId())) {
+                    log.error("Entity cannot be removed for current user: {}", request.getUser());
+                    return false;
+                }
                 updateTime = ZonedDateTime.now();
-                log.info("Element: {} with distance {} has been deleted", value, distance);
+                log.info("Element: {} has been deleted", value);
                 return true;
             }
             log.warn("Elements with such distance {} is not present", distance);

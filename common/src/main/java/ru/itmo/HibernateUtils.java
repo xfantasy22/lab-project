@@ -31,7 +31,7 @@ public class HibernateUtils {
                 properties.put(Environment.USER, USERNAME);
                 properties.put(Environment.PASS, PASSWORD);
                 properties.put(Environment.DIALECT, "org.hibernate.dialect.PostgreSQL9Dialect");
-                properties.put(Environment.HBM2DDL_AUTO, "create");
+                properties.put(Environment.HBM2DDL_AUTO, "none");
 
                 configuration.setProperties(properties);
                 configuration.addAnnotatedClass(Route.class);

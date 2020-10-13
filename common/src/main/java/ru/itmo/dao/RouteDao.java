@@ -17,4 +17,8 @@ public interface RouteDao {
     List<RouteView> findAll();
 
     void deleteAll(User user);
+
+    boolean exists(Long id);
+
+    List<RouteView> findAllByUser(User user);
 }

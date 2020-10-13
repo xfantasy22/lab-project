@@ -5,7 +5,7 @@ import lombok.*;
 import javax.persistence.*;
 import java.io.Serializable;
 import java.time.ZonedDateTime;
-import java.util.Collection;
+import java.util.List;
 
 @Data
 @Entity
@@ -28,9 +28,9 @@ public class Route implements Serializable {
     @ToString.Exclude
     private Coordinates coordinates;
 
-    @OneToMany(mappedBy = "route")
+    @OneToMany(mappedBy = "route", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @ToString.Exclude
-    private Collection<Location> locations;
+    private List<Location> locations;
 
     private long distance;
 

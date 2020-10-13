@@ -1,9 +1,12 @@
 package ru.itmo.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.hash.Hashing;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import ru.itmo.context.ServerContext;
+import ru.itmo.dao.UserDao;
+import ru.itmo.exception.ValidateException;
 import ru.itmo.model.*;
 import ru.itmo.model.domain.User;
 import ru.itmo.service.command.ReadCommand;
@@ -18,9 +21,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.DatagramChannel;
 import java.security.MessageDigest;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -72,8 +73,7 @@ public class Server implements Runnable {
         ExecutorService fixed = Executors.newFixedThreadPool(5);
         ExecutorService cache = Executors.newCachedThreadPool();
 
-        Set<Future<ServerResponse>> set = new HashSet<>();
-
+        Future<ServerResponse> future;
         log.info("Command request: {}", request.getCommand());
         try {
             if (Command.SIGN_UP == request.getCommand()) {
@@ -98,44 +98,44 @@ public class Server implements Runnable {
             } else {
                 responseCallable = new ReadCommand(request);
             }
-            set.add(fixed.submit(responseCallable));
+            future = fixed.submit(responseCallable);
         } catch (Exception e) {
             ServerResponse error = ServerResponse.builder().error(e.getMessage()).status(Status.Failed).build();
-            set.add(fixed.submit(() -> error));
+            future = fixed.submit(() -> error);
         }
-        set.forEach(value -> cache.submit(new DataSender(datagramChannel, value, socketAddress)));
+        cache.submit(new DataSender(datagramChannel, future, socketAddress));
     }
 
-    private ServerResponse validateUser(ClientRequest clientRequest) {
-        User user = clientRequest.getUser();
-        User userFromDb = ServerContext.getInstance().getUserDao().findOne(user.getUsername());
-        if (userFromDb != null) {
-            if (checkPassword(userFromDb.getPassword(), encrypt(user.getPassword()))) {
-                clientRequest.setUser(userFromDb);
-                return ServerResponse.builder()
-                        .status(Status.Success)
-                        .response("You are successfully logged in")
-                        .build();
-            }
-        }
-        return ServerResponse.builder()
-                .status(Status.RequireLogin)
-                .error("Username or password is not valid")
-                .build();
-    }
 
     private ServerResponse createUser(ClientRequest request) {
+        UserDao userDao = ServerContext.getInstance().getUserDao();
         User user = request.getUser();
+        if (userDao.findOne(user.getUsername()) != null) {
+            throw new ValidateException("Username should be unique");
+        }
+
         user.setPassword(encrypt(user.getPassword()));
-        ServerContext.getInstance().getUserDao().save(user);
+        userDao.save(user);
+
         return ServerResponse.builder()
                 .status(Status.Success)
                 .response("User successfully created")
                 .build();
     }
 
-    public void stopServer() {
-        running = false;
+    private ServerResponse validateUser(ClientRequest request) {
+        User user = request.getUser();
+        User userFromDb = ServerContext.getInstance().getUserDao().findOne(user.getUsername());
+        if (userFromDb != null) {
+            if (checkPassword(userFromDb.getPassword(), encrypt(user.getPassword()))) {
+                request.setUser(userFromDb);
+                return ServerResponse.builder()
+                        .status(Status.Success)
+                        .response("You are successfully logged in")
+                        .build();
+            }
+        }
+        throw new ValidateException("Username or password is not valid");
     }
 
     @SneakyThrows
@@ -152,5 +152,9 @@ public class Server implements Runnable {
 
     private boolean checkPassword(String expected, String actual) {
         return expected.equals(actual);
+    }
+
+    public void stopServer() {
+        running = false;
     }
 }

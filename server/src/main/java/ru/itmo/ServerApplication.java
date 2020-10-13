@@ -5,12 +5,15 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.flywaydb.core.Flyway;
 import ru.itmo.context.ServerContext;
 import ru.itmo.model.Command;
 import ru.itmo.service.Server;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+
+import static ru.itmo.HibernateUtils.*;
 
 @Slf4j
 public class ServerApplication {
@@ -20,8 +23,8 @@ public class ServerApplication {
         log.info("Server started");
 
         // db migration
-//        Flyway flyway = Flyway.configure().dataSource("jdbc:postgresql://localhost:5432/" + DATABASE_NAME, USERNAME, PASSWORD).load();
-//        flyway.migrate();
+        Flyway flyway = Flyway.configure().dataSource("jdbc:postgresql://localhost:5432/" + DATABASE_NAME, USERNAME, PASSWORD).load();
+        flyway.migrate();
 
         //config jackson
         configureJackson();

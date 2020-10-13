@@ -15,6 +15,7 @@ import java.util.Arrays;
 public class Mapper {
     public static Route toRoute(RouteView view, User user) {
         return Route.builder()
+                .id(view.getId())
                 .creationTime(view.getCreationTime())
                 .name(view.getName())
                 .distance(view.getDistance())
@@ -25,6 +26,9 @@ public class Mapper {
     }
 
     private static Location toLocation(LocationView view, boolean isFrom) {
+        if (!isFrom && view == null) {
+            return null;
+        }
         return Location.builder()
                 .x(view.getX())
                 .y(view.getY())

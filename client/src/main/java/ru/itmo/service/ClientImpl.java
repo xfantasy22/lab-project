@@ -66,10 +66,7 @@ public class ClientImpl implements Client {
         ObjectMapper objectMapper = ClientContext.getInstance().getObjectMapper();
         ServerResponse serverResponse = objectMapper.readValue(data, ServerResponse.class);
         if (serverResponse.getStatus() == Status.Failed) {
-            throw new ValidateException("Command failed. Error: " + serverResponse.getError());
-        }
-        if (serverResponse.getStatus() == Status.RequireLogin) {
-            throw new ValidateException(serverResponse.getError());
+            throw new ValidateException("Command failed. " + serverResponse.getError());
         }
         return serverResponse.getResponse();
     }

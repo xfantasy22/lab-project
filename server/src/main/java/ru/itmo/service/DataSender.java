@@ -31,5 +31,6 @@ public class DataSender implements Runnable {
         ByteBuffer byteBuffer = ByteBuffer.wrap(new ObjectMapper().writeValueAsBytes(response));
         channel.send(byteBuffer, socketAddress);
         log.info("Answer was sent to address: {}", socketAddress);
+        serverResponseFuture.cancel(true);
     }
 }

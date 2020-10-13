@@ -7,7 +7,6 @@ import ru.itmo.model.dto.RouteView;
 import ru.itmo.util.LogUtils;
 import ru.itmo.validator.EntityValidator;
 
-import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Scanner;
 import java.util.function.Function;
@@ -41,7 +40,8 @@ public class RouteCreatorImpl implements RouteCreator {
         validateUpdate(s -> location(routeBuilder, s, LOCATION_FROM), scanner.nextLine());
 
         System.out.printf("Enter a location (%s). X, Y and Z:%n", LOCATION_TO);
-        validateUpdate(s -> location(routeBuilder, s, LOCATION_TO), scanner.nextLine());
+        String value = scanner.nextLine();
+        validateUpdate(s -> location(routeBuilder, s, LOCATION_TO), !value.isEmpty() ? value : "1");
 
         System.out.println("Enter a distance:");
         validateUpdate(s -> distance(routeBuilder, s), scanner.nextLine());

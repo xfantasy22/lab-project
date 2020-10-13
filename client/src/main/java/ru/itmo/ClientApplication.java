@@ -18,5 +18,4 @@ public class ClientApplication {
         }
         scanner.close();
     }
-
 }
