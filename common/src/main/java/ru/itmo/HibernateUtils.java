@@ -22,6 +22,7 @@ public class HibernateUtils {
     public static final String DATABASE_NAME = System.getProperty("db_name", "lab7");
     public static final String USERNAME = System.getProperty("username", "sergey");
     public static final String PASSWORD = System.getProperty("password", "qwerty");
+    public static final String HOST = System.getProperty("host", "localhost");
 
     public static SessionFactory getSessionFactory() {
         if (sessionFactory == null) {
@@ -31,7 +32,7 @@ public class HibernateUtils {
 
                 Properties properties = new Properties();
                 properties.put(Environment.DRIVER, "org.postgresql.Driver");
-                properties.put(Environment.URL, "jdbc:postgresql://localhost:5432/" + DATABASE_NAME);
+                properties.put(Environment.URL, "jdbc:postgresql://" + HOST + ":5432/" + DATABASE_NAME);
                 properties.put(Environment.USER, USERNAME);
                 properties.put(Environment.PASS, PASSWORD);
                 properties.put(Environment.DIALECT, "org.hibernate.dialect.PostgreSQL9Dialect");

@@ -21,7 +21,7 @@ public class ServerApplication {
     @SneakyThrows
     public static void main(String[] args) {
         // db migration
-        Flyway flyway = Flyway.configure().dataSource("jdbc:postgresql://localhost:5432/" + DATABASE_NAME, USERNAME, PASSWORD).load();
+        Flyway flyway = Flyway.configure().dataSource("jdbc:postgresql://" + HOST + ":5432/" + DATABASE_NAME, USERNAME, PASSWORD).load();
         String systemProperties = System.getProperty("clean", "false");
         if (Boolean.parseBoolean(systemProperties)) {
             flyway.clean();
