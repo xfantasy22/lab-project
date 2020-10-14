@@ -19,6 +19,7 @@ public class HibernateUtils {
     private static StandardServiceRegistry registry;
     private static SessionFactory sessionFactory;
 
+
     public static final String DATABASE_NAME = System.getProperty("db_name", "studs");
     public static final String USERNAME = System.getProperty("username", "s284757");
     public static final String PASSWORD = System.getProperty("password", "yza787");
