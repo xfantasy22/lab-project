@@ -7,7 +7,10 @@ import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.cfg.Environment;
 import org.hibernate.service.ServiceRegistry;
-import ru.itmo.model.domain.*;
+import ru.itmo.model.domain.Coordinates;
+import ru.itmo.model.domain.Location;
+import ru.itmo.model.domain.Route;
+import ru.itmo.model.domain.User;
 
 import java.util.Properties;
 
@@ -16,9 +19,9 @@ public class HibernateUtils {
     private static StandardServiceRegistry registry;
     private static SessionFactory sessionFactory;
 
-    public static final String DATABASE_NAME = "studs";
-    public static final String USERNAME = "s284757";
-    public static final String PASSWORD = "yza787";
+    public static final String DATABASE_NAME = System.getProperty("db_name", "lab7");
+    public static final String USERNAME = System.getProperty("username", "sergey");
+    public static final String PASSWORD = System.getProperty("password", "qwerty");
 
     public static SessionFactory getSessionFactory() {
         if (sessionFactory == null) {

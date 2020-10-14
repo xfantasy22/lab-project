@@ -20,11 +20,16 @@ public class ServerApplication {
 
     @SneakyThrows
     public static void main(String[] args) {
-        log.info("Server started");
-
         // db migration
         Flyway flyway = Flyway.configure().dataSource("jdbc:postgresql://localhost:5432/" + DATABASE_NAME, USERNAME, PASSWORD).load();
-        flyway.migrate();
+        String systemProperties = System.getProperty("clean", "false");
+        if (Boolean.parseBoolean(systemProperties)) {
+            flyway.clean();
+            log.info("Migrations cleaned successfully");
+            return;
+        } else {
+            flyway.migrate();
+        }
 
         //config jackson
         configureJackson();
@@ -33,6 +38,7 @@ public class ServerApplication {
         //program
         Server server = new Server();
         new Thread(server).start();
+        log.info("Server started");
         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(System.in));
         boolean running = true;
         while (running) {
