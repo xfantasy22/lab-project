@@ -19,10 +19,10 @@ public class HibernateUtils {
     private static StandardServiceRegistry registry;
     private static SessionFactory sessionFactory;
 
-    public static final String DATABASE_NAME = System.getProperty("db_name", "lab7");
-    public static final String USERNAME = System.getProperty("username", "sergey");
-    public static final String PASSWORD = System.getProperty("password", "qwerty");
-    public static final String HOST = System.getProperty("host", "localhost");
+    public static final String DATABASE_NAME = System.getProperty("db_name", "studs");
+    public static final String USERNAME = System.getProperty("username", "s284757");
+    public static final String PASSWORD = System.getProperty("password", "yza787");
+    public static final String HOST = System.getProperty("host", "pg");
 
     public static SessionFactory getSessionFactory() {
         if (sessionFactory == null) {
