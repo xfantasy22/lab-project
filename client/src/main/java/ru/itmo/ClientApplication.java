@@ -7,6 +7,7 @@ import java.util.Scanner;
 
 public class ClientApplication {
 
+
     public static void main(String[] args) {
         CommandInvoker commandInvoker = ClientContext.getInstance().getCommandInvoker();
         Scanner scanner = new Scanner(System.in);
